@@ -5,6 +5,7 @@ from io import BytesIO
 from docx import Document
 import PyPDF2
 import os
+import textdistance
 
 DB = os.environ.get("AI_DETECTOR_DB", "users.db")
 
@@ -22,14 +23,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-def create_user(username, name, email, password_hash):
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
-    c.execute("INSERT OR REPLACE INTO users (username,name,email,password_hash,subscription_expiry) VALUES (?,?,?,?,?)",
-              (username, name, email, password_hash, None))
-    conn.commit()
-    conn.close()
-
 def get_user(username):
     conn = sqlite3.connect(DB)
     c = conn.cursor()
@@ -39,15 +32,6 @@ def get_user(username):
     if not row:
         return None
     return {"username": row[0], "name": row[1], "email": row[2], "subscription_expiry": row[3]}
-
-def update_subscription(username, days=30):
-    expiry = (datetime.utcnow() + timedelta(days=days)).isoformat()
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
-    c.execute("UPDATE users SET subscription_expiry=? WHERE username=?", (expiry, username))
-    conn.commit()
-    conn.close()
-    return expiry
 
 def check_subscription_active(username):
     user = get_user(username)
@@ -74,7 +58,7 @@ def extract_text_from_uploaded(uploaded_file):
     else:
         return ""
 
-# --- Simple AI-likelihood scorer ---
+# --- Simple AI-likelihood scorer (rule-based) ---
 def simple_ai_score(text):
     indicators = [
         "sa pangkalahatan", "bilang konklusyon", "ayon sa pananaliksik",
@@ -84,5 +68,10 @@ def simple_ai_score(text):
     text_low = text.lower()
     found = [k for k in indicators if k in text_low]
     count = len(found)
-    score = min(1.0, 0.2 * count)
+    score = min(1.0, 0.2 * count)  # Maximum 100%
     return score, found
+
+# --- Similarity checker ---
+def similarity_percentage(text1, text2):
+    sim = textdistance.jaccard.similarity(text1, text2)
+    return sim

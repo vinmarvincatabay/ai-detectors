@@ -3,4 +3,4 @@ langdetect
 textdistance
 python-docx
 PyPDF2
-streamlit-authenticator
+streamlit-authenticator==0.5.1

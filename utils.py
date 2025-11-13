@@ -1,4 +1,5 @@
 # utils.py
+
 import sqlite3
 from datetime import datetime
 from io import BytesIO
@@ -7,7 +8,6 @@ import PyPDF2
 import textdistance
 import os
 
-# --- Database helpers ---
 def init_db():
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
@@ -21,20 +21,33 @@ def init_db():
     conn.commit()
     conn.close()
 
+def extract_text_from_uploaded(uploaded_file):
+    text = ""
+    if uploaded_file.type == "application/pdf":
+        reader = PyPDF2.PdfReader(uploaded_file)
+        for page in reader.pages:
+            text += page.extract_text()
+    elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        doc = Document(uploaded_file)
+        for para in doc.paragraphs:
+            text += para.text + "\n"
+    else:
+        text = str(uploaded_file.read(), "utf-8")
+    return text
+
+def simple_ai_score(text):
+    score = 0.0
+    reasons = []
+    if len(text.split()) > 100:  # example heuristic
+        score += 0.3
+        reasons.append("Long text")
+    return min(score, 1.0), reasons
+
+def similarity_percentage(text1, text2):
+    return textdistance.jaccard(text1, text2)
+
 def get_user(username):
-    # ...function code...
+    pass
 
 def check_subscription_active(username):
-    # ...function code...
-
-# --- File text extraction ---
-def extract_text_from_uploaded(uploaded_file):
-    # ...function code...
-
-# --- Simple AI-likelihood scorer ---
-def simple_ai_score(text):
-    # ...function code...
-
-# --- Similarity checker ---
-def similarity_percentage(text1, text2):
-    # ...function code...
+    return True

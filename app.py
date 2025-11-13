@@ -4,14 +4,13 @@ from langdetect import detect
 import textdistance
 from utils import init_db, extract_text_from_uploaded, simple_ai_score, check_subscription_active, get_user
 import streamlit_authenticator as stauth
-import os
 
 # Initialize DB
 init_db()
 
 st.set_page_config(page_title="Filipino AI & Similarity Detector", layout="wide")
 
-# Simple credentials example (demo)
+# Demo credentials
 credentials = {
     "usernames": {
         "demo": {"name": "Demo User", "password": "demo123"}
@@ -33,7 +32,6 @@ if authentication_status:
     active, expiry = check_subscription_active(db_username)
     if not active:
         st.warning("Walang active subscription. Paki-renew para magamit ang serbisyo.")
-        st.markdown("**Options:** 1) Pay via your subscription link (Stripe)  2) Contact admin for manual activation.")
         st.stop()
 
     st.title("🧠 Filipino AI Detector + Similarity Checker")
@@ -47,7 +45,7 @@ if authentication_status:
         try:
             lang = detect(text)
             st.write(f"Language detected: `{lang}`")
-            if lang != "tl" and lang != "fil":
+            if lang not in ["tl", "fil"]:
                 st.info("Tandaan: ang teksto ay hindi mukhang Filipino. Maaari pa ring ma-process.")
         except Exception:
             st.write("Hindi matukoy ang wika.")

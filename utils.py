@@ -1,33 +1,40 @@
-import streamlit as st
-from langdetect import detect
-from utils import extract_text_from_uploaded, simple_ai_score, similarity_percentage
+# utils.py
+import sqlite3
+from datetime import datetime
+from io import BytesIO
+from docx import Document
+import PyPDF2
+import textdistance
+import os
 
-st.title("🧠 Filipino AI Detector + Similarity Checker")
+# --- Database helpers ---
+def init_db():
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("""CREATE TABLE IF NOT EXISTS users (
+        username TEXT PRIMARY KEY,
+        name TEXT,
+        email TEXT,
+        password_hash TEXT,
+        subscription_expiry TEXT
+    )""")
+    conn.commit()
+    conn.close()
 
-uploaded_file = st.file_uploader("I-upload ang .txt, .docx, o .pdf file", type=["txt", "docx", "pdf"])
-if uploaded_file:
-    text = extract_text_from_uploaded(uploaded_file)
-    st.subheader("📄 Preview (unang 2000 characters)")
-    st.write(text[:2000])
+def get_user(username):
+    # ...function code...
 
-    try:
-        lang = detect(text)
-        st.write(f"Language detected: `{lang}`")
-    except Exception:
-        st.write("Hindi matukoy ang wika.")
+def check_subscription_active(username):
+    # ...function code...
 
-    # AI-likelihood
-    score, reasons = simple_ai_score(text)
-    st.metric("AI-likelihood (approx)", f"{int(score*100)}%")
-    if reasons:
-        st.write("Indicators found:", reasons)
+# --- File text extraction ---
+def extract_text_from_uploaded(uploaded_file):
+    # ...function code...
 
-    # Similarity Checker
-    st.subheader("🔍 Similarity Checker")
-    other = st.text_area("Ilagay ang ibang teksto para i-compare (paste dito):")
-    if st.button("Suriin ang Similarity"):
-        if not other.strip():
-            st.error("Maglagay ng teksto para ikumpara.")
-        else:
-            sim = similarity_percentage(text, other)
-            st.info(f"Similarity: {sim*100:.2f}%")
+# --- Simple AI-likelihood scorer ---
+def simple_ai_score(text):
+    # ...function code...
+
+# --- Similarity checker ---
+def similarity_percentage(text1, text2):
+    # ...function code...
